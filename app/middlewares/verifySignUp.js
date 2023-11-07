@@ -1,41 +1,29 @@
 const db = require("../models");
+const ModelFactory = require('../ModelFactory');
+const userModel = ModelFactory.getModel('User');
 const ROLES = db.ROLES;
-const User = db.user;
 
-checkDuplicateUsernameOrEmail = (req, res, next) => {
-    // Username
-    User.findOne({
-        username: req.body.username.toLowerCase()
-    }).exec((err, user) => {
-        if (err) {
-            res.status(500).send({message: err});
-            return;
+
+checkDuplicateUsernameOrEmail = async (req, res, next) => {
+    try {
+        // Check for duplicate username
+        const userWithUsername = await userModel.findOne({username: req.body.username.toLowerCase()});
+        if (userWithUsername) {
+            return res.status(400).send({message: "Username is already in use!"});
         }
 
-        if (user) {
-            console.log("user found")
-            res.status(400).send({message: "Username is already in use!"});
-            return;
+        // Check for duplicate email
+        const userWithEmail = await userModel.findOne({email: req.body.email.toLowerCase()});
+        if (userWithEmail) {
+            return res.status(400).send({message: "Email is already in use!"});
         }
 
-        // Email
-        User.findOne({
-            email: req.body.email.toLowerCase()
-        }).exec((err, user) => {
-            if (err) {
-                res.status(500).send({message: err});
-                return;
-            }
-
-            if (user) {
-                res.status(400).send({message: "Email is already in use!"});
-                return;
-            }
-
-            next();
-        });
-    });
+        next();
+    } catch (err) {
+        res.status(500).send({message: err.message});
+    }
 };
+
 
 checkRolesExisted = (req, res, next) => {
     if (req.body.roles) {
