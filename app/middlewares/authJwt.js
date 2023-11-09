@@ -1,16 +1,18 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config.js");
 const db = require("../models");
-const User = db.user;
-const Role = db.role;
-const Restaurant = db.restaurant;
+
+const ModelFactory = require('../ModelFactory');
+const userModel = ModelFactory.createModel('User');
+const roleModel = ModelFactory.createModel('Role');
+const restaurantModel = ModelFactory.createModel('Restaurant');
 
 verifyToken = (req, res, next) => {
     let token = req.headers["x-access-token"];
     if (!token) {
         return res.status(403).send({message: "No token provided!"});
     }
-
+    console.log("Coming here Token")
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
             return res.status(401).send({message: "Unauthorized!"});
@@ -20,53 +22,52 @@ verifyToken = (req, res, next) => {
     });
 };
 
-isAdmin = (req, res, next) => {
-    User.findById(req.userId).exec((err, user) => {
-        if (err) {
-            res.status(500).send({message: err});
-            return;
+isAdmin = async (req, res, next) => {
+    console.log("Coming here admin")
+    try {
+        // Create instances of UserModel and RoleModel using the ModelFactory
+        const user = await userModel.findById(req.userId).exec();
+        if (!user) {
+            return res.status(404).send({ message: 'User not found.' });
         }
 
-        Role.find(
-            {
-                _id: {$in: user.roles}
-            },
-            (err, roles) => {
-                if (err) {
-                    res.status(500).send({message: err});
-                    return;
-                }
+        const roles = await roleModel.find({ _id: { $in: user.roles } });
 
-                for (let i = 0; i < roles.length; i++) {
-                    if (roles[i].name === "admin") {
+        if (!roles) {
+            return res.status(403).send({ message: 'Require Admin Role!' });
+        }
 
-                        next();
-                        return;
-                    }
-                }
-
-                res.status(403).send({message: "Require Admin Role!"});
-                return;
+        let isAdmin = false;
+        for (let i = 0; i < roles.length; i++) {
+            if (roles[i].name === 'admin') {
+                isAdmin = true;
+                break;
             }
-        );
-    });
+        }
+
+        if (isAdmin) {
+            next();
+        } else {
+            res.status(403).send({ message: 'Require Admin Role!' });
+        }
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
 };
 
-isRestaurantOwner = (req, res, next) => {
-    Restaurant.findOne({ adminId: req.userId }).exec((err, restaurant) => {
-        if (err) {
-            res.status(500).send({ message: err });
-            return;
-        }
-
+isRestaurantOwner = async (req, res, next) => {
+    try {
+        const restaurant = await restaurantModel.findOne({ adminId: req.userId });
+        console.log("Coming here owner")
         if (!restaurant) {
-            res.status(403).send({ message: "Unauthorised!" });
-            return;
+            return res.status(403).send({ message: "Unauthorised!" });
         }
 
         req.rest_id = restaurant._id;
         next();
-    });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
 };
 
 const authJwt = {

@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const BaseModel = require("./BaseModel");
+class RoleModel extends BaseModel {
+    constructor() {
+        super("Role", {
+            name: String,
+        });
+    }
+}
 
-const Role = mongoose.model(
-  "Role",
-  new mongoose.Schema({
-    name: String
-  })
-);
-
-module.exports = Role;
+module.exports = RoleModel;

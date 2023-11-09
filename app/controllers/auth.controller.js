@@ -1,65 +1,81 @@
 const config = require("../config/auth.config");
-const db = require("../models");
-const User = db.user;
-const Role = db.role;
-const Restaurant = db.restaurant;
-
 let jwt = require("jsonwebtoken");
 let bcrypt = require("bcryptjs");
 
-exports.signup = (req, res) => {
-    const user = new User({
-        username: req.body?.username.toLowerCase(),
-        fullName: req.body?.fullName,
-        email: req.body?.email,
-        password: bcrypt.hashSync(req.body?.password, 8)
-    });
+const ModelFactory = require('../ModelFactory');
+const userModel = ModelFactory.createModel('User');
+const roleModel = ModelFactory.createModel('Role');
+const restaurantModel = ModelFactory.createModel('Restaurant');
 
-    user.save((err, user) => {
-        if (err) {
-            res.status(500).send({message: err});
-            return;
-        }
+exports.signup = async (req, res) => {
+    try {
+        const {username, fullName, email, password} = req.body;
 
-        if (req.body.roles) {
-            Role.find(
-                {
-                    name: {$in: req.body.roles}
-                },
-                (err, roles) => {
-                    if (err) {
-                        res.status(500).send({message: err});
-                        return;
-                    }
+        // If no roles are provided, set the default role 'user'
+        const defaultRole = await roleModel.findOne({name: 'user'});
+        const role = [defaultRole._id];
+        const createdUser = await userModel.create({
+            username: username?.toLowerCase(),
+            fullName,
+            email,
+            password: bcrypt.hashSync(password, 8),
+            roles: role
+        });
 
-                    user.roles = roles.map(role => role._id);
-                    user.save((err) => {
-                        if (err) {
-                            res.status(500).send({message: err});
-                            return;
-                        }
-                        res.send({data: user, message: "User registered successfully!"});
-                    });
-                }
-            );
-        } else {
-            Role.findOne({name: "user"}, (err, role) => {
-                if (err) {
-                    res.status(500).send({message: err});
-                    return;
-                }
-
-                user.roles = [role._id];
-                user.save((err, user) => {
-                    if (err) {
-                        res.status(500).send({message: err});
-                        return;
-                    }
-                    res.send({message: "User registered successfully!"});
-                });
-            });
-        }
-    });
+        res.status(201).send({data: createdUser, message: 'User registered successfully!'});
+    } catch (err) {
+        res.status(500).send({message: err.message});
+    }
 };
 
+
+exports.signin = async (req, res) => {
+    try {
+        const {username, password} = req.body;
+
+        // Find the user by username and populate roles
+        const user = await userModel.findOne({username});
+
+        if (!user) {
+            return res.status(404).send({message: 'User Not found.'});
+        }
+        if (!user.password) {
+            return res.status(401).send({message: 'User password is missing.'});
+        }
+
+        const passwordIsValid = bcrypt.compareSync(password, user.password);
+
+        if (!passwordIsValid) {
+            return res.status(401).send({
+                accessToken: null,
+                message: 'Invalid Password!',
+            });
+        }
+
+        let tokenPayload = {
+            id: user.id,
+        };
+
+        const restaurant = await restaurantModel.findOne({adminId: user.id});
+
+        if (restaurant) {
+            tokenPayload.restaurantId = restaurant._id;
+        }
+
+        const token = jwt.sign(tokenPayload, config.secret, {
+            expiresIn: 86400, // 24 hours
+        });
+
+        res.status(200).send({
+            id: user._id,
+            username: user?.username,
+            email: user?.email,
+            fullName: user?.fullName,
+            accessToken: token,
+        });
+    } catch (err) {
+        console.error(err); // Log the error for debugging
+        res.status(500).send({message: err.message});
+    }
+};
 

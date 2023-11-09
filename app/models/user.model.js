@@ -1,19 +1,16 @@
-const mongoose = require("mongoose");
+const BaseModel = require("./BaseModel");
 
-const User = mongoose.model(
-    "User",
-    new mongoose.Schema({
-        fullName: String,
-        username: String,
-        email: String,
-        password: String,
-        cart: {},
-        roles:
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Role"
-            }
-    })
-);
+class UserModel extends BaseModel {
+    constructor() {
+        super("User", {
+            fullName: String,
+            username: String,
+            email: String,
+            password: String,
+            cart: {},
+            roles:[]
+        });
+    }
+}
 
-module.exports = User;
+module.exports = UserModel;

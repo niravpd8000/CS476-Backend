@@ -1,6 +1,6 @@
 const db = require("../models");
 const ModelFactory = require('../ModelFactory');
-const userModel = ModelFactory.getModel('User');
+const userModel = ModelFactory.createModel('User');
 const ROLES = db.ROLES;
 
 

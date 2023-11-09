@@ -50,7 +50,6 @@ exports.RestSignup = async (req, res) => {
     }
 };
 
-
 exports.getAllRestaurants = async (req, res) => {
     try {
         // Use the findById method from the restaurantModel to retrieve the restaurant by ID
@@ -82,24 +81,3 @@ exports.getRestaurantById = async (req, res) => {
     }
 };
 
-
-exports.updateRestaurantById = async (req, res) => {
-    try {
-        const restaurantId = req.params.id;
-        const updatedRestaurantData = req.body;
-        // Use the findByIdAndUpdate method from the restaurantModel to update the restaurant by ID
-        const updatedRestaurant = await restaurantModel.findByIdAndUpdate(
-            restaurantId,
-            updatedRestaurantData,
-            {new: true, runValidators: true}
-        );
-
-        if (!updatedRestaurant) {
-            return res.status(404).send({message: 'Restaurant not found.'});
-        }
-
-        res.status(200).send(updatedRestaurant);
-    } catch (err) {
-        res.status(500).send({message: err.message});
-    }
-};
