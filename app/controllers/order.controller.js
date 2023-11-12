@@ -122,3 +122,159 @@ exports.getOrderById = async (req, res) => {
 };
 
 
+exports.updateOrderStatusById = async (req, res) => {
+    try {
+        const orderId = req.body.order_id;
+        const updatedStatus = req.body.status;
+
+        const updatedOrder = await orderModel.update(orderId, {status: updatedStatus});
+
+        if (!updatedOrder) {
+            return res.status(404).send({message: 'Order not found.'});
+        }
+
+        res.status(200).send(updatedOrder);
+    } catch (err) {
+        res.status(500).send({message: err.message});
+    }
+};
+
+
+exports.giveRating = async (req, res) => {
+    try {
+        const orderId = req.body.order_id;
+        const rating = req.body.rating;
+        const feedback = req.body.feedback;
+
+        const order = await orderModel.findById(orderId);
+
+        if (!order) {
+            return res.status(404).send({message: 'Order not found.'});
+        }
+
+        order.rating = rating;
+        order.feedback = feedback;
+
+        const updatedOrder = await order.save();
+
+        res.status(200).send(updatedOrder);
+    } catch (err) {
+        res.status(500).send({message: err.message});
+    }
+};
+
+
+exports.getRestaurantOrderItems = async (req, res) => {
+    try {
+        const rest_id = req.rest_id;
+        const {timeInterval} = req.query;
+
+        let startDate, endDate;
+
+        switch (timeInterval) {
+            case 'today':
+                startDate = moment().startOf('day').utc();
+                endDate = moment().endOf('day').utc();
+                break;
+            case 'thisWeek':
+                startDate = moment().startOf('week').utc();
+                endDate = moment().endOf('week').utc();
+                break;
+            case 'thisMonth':
+                startDate = moment().startOf('month').utc();
+                endDate = moment().endOf('month').utc();
+                break;
+            case 'thisYear':
+                startDate = moment().startOf('year').utc();
+                endDate = moment().endOf('year').utc();
+                break;
+            default:
+                return res.status(400).send({message: 'Invalid time interval provided.'});
+        }
+
+        const query = {
+            rest_id: rest_id,
+            timestamp: {$gte: startDate, $lte: endDate},
+        };
+
+        const restaurantOrders = await orderModel.find(query).sort({timestamp: -1});
+
+        if (!restaurantOrders || restaurantOrders.length === 0) {
+            return res.status(404).send({message: `No orders found for this restaurant within ${timeInterval}.`});
+        }
+
+        // Calculate total items sold
+        const itemCounts = {};
+        restaurantOrders.forEach(order => {
+            order.items.forEach(item => {
+                const itemName = item?.item?.name;
+                itemCounts[itemName] = (itemCounts[itemName] || 0) + item?.quantity;
+            });
+        });
+
+        // Extract orders with ratings
+        const ordersWithRatings = restaurantOrders
+            .filter(order => order.rating !== undefined)
+            .map(order => ({
+                orderId: order._id,
+                rating: order.rating,
+                feedback: order?.feedback || "No feedback",
+                timestamp: order?.timestamp
+            }));
+
+        // Extract pickup orders and reservation orders
+        const pickupOrders = restaurantOrders.filter(order => order.isPickUp === true);
+        const reservationOrders = restaurantOrders.filter(order => order.isPickUp !== true);
+
+        res.status(200).send({
+            itemCounts,
+            ratings: ordersWithRatings,
+            pickupOrders: getCountsByTimeInterval(pickupOrders, timeInterval),
+            reservationOrders: getCountsByTimeInterval(reservationOrders, timeInterval),
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({message: err.message});
+    }
+};
+
+
+function getCountsByTimeInterval(orders, timeInterval) {
+    let groupByUnit;
+    let dateFormat;
+
+    switch (timeInterval) {
+        case 'today':
+            groupByUnit = 'hour';
+            dateFormat = 'HH:00';
+            break;
+        case 'thisWeek':
+            groupByUnit = 'day';
+            dateFormat = 'YYYY-MM-DD';
+            break;
+        case 'thisMonth':
+            groupByUnit = 'week';
+            dateFormat = 'YYYY-MM-DD';
+            break;
+        case 'thisYear':
+            groupByUnit = 'month';
+            dateFormat = 'YYYY-MM';
+            break;
+        default:
+            throw new Error('Invalid time interval provided.');
+    }
+
+    const countsByTimeInterval = orders.reduce((result, order) => {
+        const timestamp = moment(order.timestamp).format(dateFormat);
+
+        if (!result[timestamp]) {
+            result[timestamp] = 1;
+        } else {
+            result[timestamp]++;
+        }
+
+        return result;
+    }, {});
+
+    return countsByTimeInterval;
+}
