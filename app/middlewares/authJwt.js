@@ -12,7 +12,6 @@ verifyToken = (req, res, next) => {
     if (!token) {
         return res.status(403).send({message: "No token provided!"});
     }
-    console.log("Coming here Token")
     jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
             return res.status(401).send({message: "Unauthorized!"});
@@ -23,7 +22,6 @@ verifyToken = (req, res, next) => {
 };
 
 isAdmin = async (req, res, next) => {
-    console.log("Coming here admin")
     try {
         // Create instances of UserModel and RoleModel using the ModelFactory
         const user = await userModel.findById(req.userId).exec();
@@ -58,11 +56,9 @@ isAdmin = async (req, res, next) => {
 isRestaurantOwner = async (req, res, next) => {
     try {
         const restaurant = await restaurantModel.findOne({ adminId: req.userId });
-        console.log("Coming here owner")
         if (!restaurant) {
             return res.status(403).send({ message: "Unauthorised!" });
         }
-
         req.rest_id = restaurant._id;
         next();
     } catch (err) {

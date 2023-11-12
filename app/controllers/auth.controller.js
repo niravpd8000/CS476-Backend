@@ -11,7 +11,6 @@ exports.signup = async (req, res) => {
     try {
         const {username, fullName, email, password} = req.body;
 
-        // If no roles are provided, set the default role 'user'
         const defaultRole = await roleModel.findOne({name: 'user'});
         const role = [defaultRole._id];
         const createdUser = await userModel.create({
@@ -33,7 +32,6 @@ exports.signin = async (req, res) => {
     try {
         const {username, password} = req.body;
 
-        // Find the user by username and populate roles
         const user = await userModel.findOne({username});
 
         if (!user) {
@@ -65,7 +63,7 @@ exports.signin = async (req, res) => {
         const token = jwt.sign(tokenPayload, config.secret, {
             expiresIn: 86400, // 24 hours
         });
-
+        console.log("success")
         res.status(200).send({
             id: user._id,
             username: user?.username,
@@ -74,7 +72,7 @@ exports.signin = async (req, res) => {
             accessToken: token,
         });
     } catch (err) {
-        console.error(err); // Log the error for debugging
+        console.error(err);
         res.status(500).send({message: err.message});
     }
 };

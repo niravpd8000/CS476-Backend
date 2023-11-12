@@ -7,7 +7,6 @@ class UserModel extends BaseModel {
             username: String,
             email: String,
             password: String,
-            cart: {},
             roles:[]
         });
     }

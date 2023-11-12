@@ -81,3 +81,22 @@ exports.getRestaurantById = async (req, res) => {
     }
 };
 
+exports.updateRestaurantById = async (req, res) => {
+    try {
+        const restaurantId = req.params.id;
+        const updatedRestaurantData = req.body;
+        const updatedRestaurant = await restaurantModel.update(
+            restaurantId,
+            updatedRestaurantData,
+            {new: true, runValidators: true}
+        );
+
+        if (!updatedRestaurant) {
+            return res.status(404).send({message: 'Restaurant not found.'});
+        }
+
+        res.status(200).send(updatedRestaurant);
+    } catch (err) {
+        res.status(500).send({message: err.message});
+    }
+};

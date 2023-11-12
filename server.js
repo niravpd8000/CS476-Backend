@@ -19,7 +19,7 @@ app.use(express.urlencoded({extended: true}));
 const db = require("./app/models");
 
 const ModelFactory = require('./app/ModelFactory');
-const RoleModel = ModelFactory.getModel('Role');
+const RoleModel = ModelFactory.createModel('Role');
 
 db.mongoose
     .connect(`mongodb+srv://niravmongo:Zaza@711@cluster0.20jv1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`, {
@@ -40,6 +40,7 @@ db.mongoose
 // routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/rest.routes")(app);
+require("./app/routes/order.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

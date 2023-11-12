@@ -25,6 +25,15 @@ class BaseModel {
     update(id, data) {
         return this.Model.findByIdAndUpdate(id, data, { new: true });
     }
+
+    updateOne(query, data) {
+        return this.Model.updateOne(query, data);
+    }
+
+    mapReduce(query){
+        return this.Model.mapReduce(query);
+    }
+
 }
 
 module.exports = BaseModel;
