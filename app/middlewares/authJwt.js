@@ -30,11 +30,10 @@ isAdmin = async (req, res, next) => {
         }
 
         const roles = await roleModel.find({ _id: { $in: user.roles } });
-
+        console.log(roles)
         if (!roles) {
             return res.status(403).send({ message: 'Require Admin Role!' });
         }
-
         let isAdmin = false;
         for (let i = 0; i < roles.length; i++) {
             if (roles[i].name === 'admin') {

@@ -21,7 +21,7 @@ exports.signup = async (req, res) => {
             roles: role
         });
 
-        res.status(201).send({data: createdUser, message: 'User registered successfully!'});
+        res.status(201).send({data: "createdUser", message: 'User registered successfully!'});
     } catch (err) {
         res.status(500).send({message: err.message});
     }
