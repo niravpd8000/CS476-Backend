@@ -38,7 +38,7 @@ db.mongoose
 
 
 // routes
-require("./app/routes/auth.routes")(app);
+require("./app/routes/user.routes")(app);
 require("./app/routes/rest.routes")(app);
 require("./app/routes/order.routes")(app);
 
