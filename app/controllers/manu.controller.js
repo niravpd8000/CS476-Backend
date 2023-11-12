@@ -56,3 +56,19 @@ exports.getManuItemById = async (req, res) => {
 };
 
 
+exports.updateManuItemById = async (req, res) => {
+    try {
+        const menuItemId = req.body.itemId;
+        const updatedManuItemData = req.body;
+
+        const updatedManuItem = await manuModel.update(menuItemId, updatedManuItemData);
+
+        if (!updatedManuItem) {
+            return res.status(404).send({ message: 'Manu item not found.' });
+        }
+
+        res.status(200).send(updatedManuItem);
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+};
