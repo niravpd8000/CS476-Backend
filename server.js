@@ -5,7 +5,15 @@ const dbConfig = require("./app/config/db.config");
 const app = express();
 
 var corsOptions = {
-    origin: ["http://localhost:3000", "https://cs-476-restaurant-booking-3jo5jyczn-niravpd8000.vercel.app", "https://cs-476-restaurant-booking.vercel.app", "https://cs-476-restaurant-booking-git-main-niravpd8000.vercel.app"],
+    origin: [
+        "http://localhost:3000",
+        "https://cs-476-restaurant-booking-3jo5jyczn-niravpd8000.vercel.app",
+        "https://cs-476-restaurant-booking.vercel.app",
+        "https://cs-476-restaurant-booking-git-main-niravpd8000.vercel.app",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,  // Enable credentials (cookies, authorization headers) for cross-origin requests
+    optionsSuccessStatus: 204,  // Respond with a 204 No Content status for preflight requests
 };
 
 app.use(cors(corsOptions));
