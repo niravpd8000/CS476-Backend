@@ -12,11 +12,13 @@ var corsOptions = {
         "https://cs-476-restaurant-booking-git-main-niravpd8000.vercel.app",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,  // Enable credentials (cookies, authorization headers) for cross-origin requests
-    optionsSuccessStatus: 204,  // Respond with a 204 No Content status for preflight requests
+    credentials: true,
+    optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors());
+app.use(cors({ credentials: true }));
 
 app.use(express.json());
 
