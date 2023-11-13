@@ -68,7 +68,7 @@ exports.getCartByUserId = async (req, res) => {
         const restaurant = await restaurantModel.findById(restaurantId);
 
         if (!restaurant) {
-            return res.status(404).send({message: 'Restaurant not found.'});
+            return res.status(200).send(cart);
         }
 
         cart.restaurantName = restaurant.name;

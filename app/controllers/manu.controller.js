@@ -29,7 +29,7 @@ exports.getAllManuByRestaurantId = async (req, res) => {
         const menuItems = await manuModel.find({ rest_id: restaurantId });
 
         if (!menuItems || menuItems.length === 0) {
-            return res.status(404).send({ message: 'No menu items found for this restaurant.' });
+            return res.status(200).send([]);
         }
 
         res.status(200).send(menuItems);

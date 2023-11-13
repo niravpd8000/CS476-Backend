@@ -28,9 +28,7 @@ isAdmin = async (req, res, next) => {
         if (!user) {
             return res.status(404).send({ message: 'User not found.' });
         }
-
         const roles = await roleModel.find({ _id: { $in: user.roles } });
-        console.log(roles)
         if (!roles) {
             return res.status(403).send({ message: 'Require Admin Role!' });
         }

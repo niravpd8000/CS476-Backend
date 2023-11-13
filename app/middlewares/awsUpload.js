@@ -4,8 +4,9 @@ const multerS3 = require('multer-s3')
 const {v4 : uuidv4} = require('uuid')
 
 AWS.config.update({
-    accessKeyId: "vpc-cs-476",
-    secretAccessKey: "cs-476-dte1rwdfw6ppc8hn6botuttaimdhwuse1a-s3alias",
+    region:"us-east-2",
+    accessKeyId: "AKIAZ3MY7NYIPJUA247B",
+    secretAccessKey: "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",
     signatureVersion: 'v4'
 });
 
@@ -31,7 +32,7 @@ const handleUploadMiddleware = multer({
     fileFilter,
     storage: multerS3({
         s3: S3,
-        bucket: "cs-476",
+        bucket: "cs476",
         acl: 'public-read',
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {

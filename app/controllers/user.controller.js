@@ -63,7 +63,6 @@ exports.signin = async (req, res) => {
         const token = jwt.sign(tokenPayload, config.secret, {
             expiresIn: 86400, // 24 hours
         });
-        console.log("success")
         res.status(200).send({
             id: user._id,
             username: user?.username,

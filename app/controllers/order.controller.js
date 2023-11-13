@@ -46,7 +46,7 @@ exports.getAllOrdersByUserId = async (req, res) => {
         const userOrders = await orderModel.find({customer_id: userId}).sort({timestamp: -1});
 
         if (!userOrders || userOrders.length === 0) {
-            return res.status(404).send({message: 'No orders found for this user.'});
+            return res.status(200).send([]);
         }
         const ordersWithRestaurantNames = await Promise.all(
             userOrders.map(async (order) => {
@@ -73,7 +73,7 @@ exports.getAllOrdersByRestId = async (req, res) => {
         const restaurantOrders = await orderModel.find({rest_id: restaurantId}).sort({timestamp: -1});
 
         if (!restaurantOrders || restaurantOrders.length === 0) {
-            return res.status(404).send({message: 'No orders found for this restaurant.'});
+            return res.status(200).send([]);
         }
 
         const ordersWithCustomerNames = await Promise.all(
@@ -200,7 +200,12 @@ exports.getRestaurantOrderItems = async (req, res) => {
         const restaurantOrders = await orderModel.find(query).sort({timestamp: -1});
 
         if (!restaurantOrders || restaurantOrders.length === 0) {
-            return res.status(404).send({message: `No orders found for this restaurant within ${timeInterval}.`});
+            return res.status(200).send({
+                itemCounts: {},
+                ratings: 0,
+                pickupOrders: [],
+                reservationOrders: [],
+            });
         }
 
         // Calculate total items sold

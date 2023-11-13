@@ -21,9 +21,8 @@ exports.RestSignup = async (req, res) => {
             image_url
         } = req.body;
 
-        const defaultRole = await roleModel.findOne({name: 'user'});
+        const defaultRole = await roleModel.findOne({name: 'admin'});
         const role = [defaultRole._id];
-        console.log("rest contr", role)
         // Create a new User document for the admin
         const user = await userModel.create({
             username: req.body?.username?.toLowerCase(),
@@ -61,7 +60,7 @@ exports.getAllRestaurants = async (req, res) => {
         const restaurant = await restaurantModel.find();
 
         if (!restaurant) {
-            return res.status(404).send({message: 'Restaurant not found.'});
+            return res.status(200).send([]);
         }
 
         res.status(200).send(restaurant);
@@ -115,7 +114,7 @@ exports.getRestaurantById = async (req, res) => {
 
 exports.updateRestaurantById = async (req, res) => {
     try {
-        const restaurantId = req.params.id;
+        const restaurantId = req.rest_id;
         const updatedRestaurantData = req.body;
         const updatedRestaurant = await restaurantModel.update(
             restaurantId,
