@@ -1,7 +1,6 @@
 const config = require("../config/auth.config");
 let jwt = require("jsonwebtoken");
 let bcrypt = require("bcryptjs");
-
 const ModelFactory = require('../ModelFactory');
 const userModel = ModelFactory.createModel('User');
 const roleModel = ModelFactory.createModel('Role');
@@ -26,8 +25,6 @@ exports.signup = async (req, res) => {
         res.status(500).send({message: err.message});
     }
 };
-
-
 exports.signin = async (req, res) => {
     try {
         const {username, password} = req.body;
