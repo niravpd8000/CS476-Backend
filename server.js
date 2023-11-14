@@ -5,14 +5,9 @@ const dbConfig = require("./app/config/db.config");
 const app = express();
 
 var corsOptions = {
-    origin: '*',
-    methods: '*',
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-};
+    origin: "https://cs-476-restaurant-booking.vercel.app/"};
 
-// app.use(cors(corsOptions));
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
